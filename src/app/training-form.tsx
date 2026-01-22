@@ -8,15 +8,34 @@ import z from 'zod'
 import { useCreateTrainingPlan } from '../http/use-create-training-plan'
 
 const trainingPlanRequest = z.object({
-  name: z.string().min(3),
-  age: z.number().positive(),
-  gender: z.enum(['masculine', 'feminine', 'other']),
-  height: z.number().positive(),
-  weight: z.number().positive(),
-  trainingGoal: z.enum(['muscle_gain', 'fat_loss', 'maintenance']),
-  experienceLevel: z.enum(['beginner', 'intermediate', 'advanced']),
-  trainingFrequency: z.enum(['3x_week', '4x_week', '5x_week']),
-  availableEquipment: z.enum(['none', 'basic', 'full_gym'])
+  name: z.string().min(3, 'Nome deve ter pelo menos 3 caracteres'),
+  age: z
+    .number({ message: 'Idade é obrigatória' })
+    .positive('Idade deve ser um número positivo')
+    .int('Idade deve ser um número inteiro'),
+  gender: z.enum(['masculine', 'feminine', 'other'], { message: 'Selecione um gênero' }),
+  height: z
+    .number({ message: 'Altura é obrigatória' })
+    .positive('Altura deve ser um número positivo')
+    .min(50, 'Altura deve ser maior que 50cm')
+    .max(250, 'Altura deve ser menor que 250cm'),
+  weight: z
+    .number({ message: 'Peso é obrigatório' })
+    .positive('Peso deve ser um número positivo')
+    .min(20, 'Peso deve ser maior que 20kg')
+    .max(300, 'Peso deve ser menor que 300kg'),
+  trainingGoal: z.enum(['muscle_gain', 'fat_loss', 'maintenance'], {
+    message: 'Selecione um objetivo de treino'
+  }),
+  experienceLevel: z.enum(['beginner', 'intermediate', 'advanced'], {
+    message: 'Selecione um nível de experiência'
+  }),
+  trainingFrequency: z.enum(['3x_week', '4x_week', '5x_week'], {
+    message: 'Selecione uma frequência semanal'
+  }),
+  availableEquipment: z.enum(['none', 'basic', 'full_gym'], {
+    message: 'Selecione os equipamentos disponíveis'
+  })
 })
 
 type TrainingPlanRequestFormData = z.infer<typeof trainingPlanRequest>
@@ -39,8 +58,8 @@ export function TrainingForm() {
         }
       },
       {
-        onSuccess: (fullResponse) => {
-          console.log('Plano completo:', fullResponse)
+        onSuccess: () => {
+          console.log('Plano gerado com sucesso!')
         },
         onError: (error) => {
           console.error('Erro:', error)
@@ -50,19 +69,12 @@ export function TrainingForm() {
     )
   }
 
-  const { register, handleSubmit } = useForm<TrainingPlanRequestFormData>({
-    resolver: zodResolver(trainingPlanRequest),
-    defaultValues: {
-      name: '',
-      age: undefined,
-      gender: 'masculine',
-      height: undefined,
-      weight: undefined,
-      trainingGoal: 'muscle_gain',
-      experienceLevel: 'beginner',
-      trainingFrequency: '3x_week',
-      availableEquipment: 'none'
-    }
+  const {
+    register,
+    handleSubmit,
+    formState: { errors }
+  } = useForm<TrainingPlanRequestFormData>({
+    resolver: zodResolver(trainingPlanRequest)
   })
 
   return (
@@ -92,15 +104,20 @@ export function TrainingForm() {
               <div className="mb-6 grid grid-cols-2 gap-3 sm:grid-cols-5 sm:gap-4">
                 <div className="col-span-2">
                   <label htmlFor="name" className="mb-2 block text-sm text-white">
-                    Nome Completo
+                    Nome
                   </label>
                   <input
                     {...register('name')}
                     type="text"
                     id="name"
                     placeholder="Seu Nome"
-                    className="w-full rounded bg-neutral-700 px-3 py-3 text-sm text-white outline-none focus:ring-2 focus:ring-amber-300 sm:px-4"
+                    className={`w-full rounded bg-neutral-700 px-3 py-3 text-sm text-white outline-none focus:ring-2 sm:px-4 ${
+                      errors.name ? 'ring-2 ring-red-500' : 'focus:ring-amber-300'
+                    }`}
                   />
+                  {errors.name && (
+                    <p className="mt-1 text-red-500 text-xs">{errors.name.message}</p>
+                  )}
                 </div>
                 <div className="col-span-1">
                   <label htmlFor="age" className="mb-2 block text-sm text-white">
@@ -111,8 +128,11 @@ export function TrainingForm() {
                     type="number"
                     id="age"
                     placeholder="00"
-                    className="w-full rounded bg-neutral-700 px-3 py-3 text-sm text-white outline-none focus:ring-2 focus:ring-amber-300 sm:px-4"
+                    className={`w-full rounded bg-neutral-700 px-3 py-3 text-sm text-white outline-none focus:ring-2 sm:px-4 ${
+                      errors.age ? 'ring-2 ring-red-500' : 'focus:ring-amber-300'
+                    }`}
                   />
+                  {errors.age && <p className="mt-1 text-red-500 text-xs">{errors.age.message}</p>}
                 </div>
                 <div className="col-span-1">
                   <label htmlFor="weight" className="mb-2 block text-sm text-white">
@@ -123,8 +143,13 @@ export function TrainingForm() {
                     type="number"
                     id="weight"
                     placeholder="00"
-                    className="w-full rounded bg-neutral-700 px-3 py-3 text-sm text-white outline-none focus:ring-2 focus:ring-amber-300 sm:px-4"
+                    className={`w-full rounded bg-neutral-700 px-3 py-3 text-sm text-white outline-none focus:ring-2 sm:px-4 ${
+                      errors.weight ? 'ring-2 ring-red-500' : 'focus:ring-amber-300'
+                    }`}
                   />
+                  {errors.weight && (
+                    <p className="mt-1 text-red-500 text-xs">{errors.weight.message}</p>
+                  )}
                 </div>
                 <div className="col-span-2 sm:col-span-1">
                   <label htmlFor="height" className="mb-2 block text-sm text-white">
@@ -135,8 +160,13 @@ export function TrainingForm() {
                     type="number"
                     id="height"
                     placeholder="000"
-                    className="w-full rounded bg-neutral-700 px-3 py-3 text-sm text-white outline-none focus:ring-2 focus:ring-amber-300 sm:px-4"
+                    className={`w-full rounded bg-neutral-700 px-3 py-3 text-sm text-white outline-none focus:ring-2 sm:px-4 ${
+                      errors.height ? 'ring-2 ring-red-500' : 'focus:ring-amber-300'
+                    }`}
                   />
+                  {errors.height && (
+                    <p className="mt-1 text-red-500 text-xs">{errors.height.message}</p>
+                  )}
                 </div>
               </div>
 
@@ -168,6 +198,9 @@ export function TrainingForm() {
                       </div>
                     </label>
                   </div>
+                  {errors.gender && (
+                    <p className="mt-2 text-red-500 text-xs">{errors.gender.message}</p>
+                  )}
                 </fieldset>
               </div>
 
@@ -223,6 +256,9 @@ export function TrainingForm() {
                       </div>
                     </label>
                   </div>
+                  {errors.trainingGoal && (
+                    <p className="mt-2 text-red-500 text-xs">{errors.trainingGoal.message}</p>
+                  )}
                 </fieldset>
               </div>
 
@@ -240,6 +276,9 @@ export function TrainingForm() {
                     <option value="intermediate">Intermediário</option>
                     <option value="advanced">Avançado</option>
                   </select>
+                  {errors.experienceLevel && (
+                    <p className="mt-1 text-red-500 text-xs">{errors.experienceLevel.message}</p>
+                  )}
                 </div>
                 <div>
                   <fieldset>
@@ -279,6 +318,11 @@ export function TrainingForm() {
                         </div>
                       </label>
                     </div>
+                    {errors.trainingFrequency && (
+                      <p className="mt-2 text-red-500 text-xs">
+                        {errors.trainingFrequency.message}
+                      </p>
+                    )}
                   </fieldset>
                 </div>
               </div>
@@ -331,6 +375,9 @@ export function TrainingForm() {
                       </div>
                     </label>
                   </div>
+                  {errors.availableEquipment && (
+                    <p className="mt-2 text-red-500 text-xs">{errors.availableEquipment.message}</p>
+                  )}
                 </fieldset>
               </div>
 
@@ -404,7 +451,11 @@ export function TrainingForm() {
                 type="button"
                 className="mt-6 flex w-full items-center justify-center gap-2 rounded-lg bg-neutral-700 py-3 font-bold text-sm text-white transition-colors hover:bg-neutral-600 sm:py-4 sm:text-base"
               >
-                {isPending ? <LoaderCircle className="h-5 w-5 animate-spin" /> : '← Criar Novo Plano'}
+                {isPending ? (
+                  <LoaderCircle className="h-5 w-5 animate-spin" />
+                ) : (
+                  '← Criar Novo Plano'
+                )}
               </button>
             </div>
           )}

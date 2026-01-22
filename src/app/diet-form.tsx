@@ -8,13 +8,28 @@ import z from 'zod'
 import { useCreateDietPlan } from '../http/use-create-diet-plan'
 
 const dietPlanRequest = z.object({
-  name: z.string().min(3),
-  age: z.number().positive(),
-  height: z.number().positive(),
-  weight: z.number().positive(),
-  activityLevel: z.enum(['sedentary', '2/3x_week', '4x_week_or_+']),
-  gender: z.enum(['masculine', 'feminine']),
-  objective: z.enum(['lose_weight', 'maintain_weight', 'gain_weight'])
+  name: z.string().min(3, 'Nome deve ter pelo menos 3 caracteres'),
+  age: z
+    .number({ message: 'Idade é obrigatória' })
+    .positive('Idade deve ser um número positivo')
+    .int('Idade deve ser um número inteiro'),
+  height: z
+    .number({ message: 'Altura é obrigatória' })
+    .positive('Altura deve ser um número positivo')
+    .min(50, 'Altura deve ser maior que 50cm')
+    .max(250, 'Altura deve ser menor que 250cm'),
+  weight: z
+    .number({ message: 'Peso é obrigatório' })
+    .positive('Peso deve ser um número positivo')
+    .min(20, 'Peso deve ser maior que 20kg')
+    .max(300, 'Peso deve ser menor que 300kg'),
+  activityLevel: z.enum(['sedentary', '2/3x_week', '4x_week_or_+'], {
+    message: 'Selecione um nível de atividade'
+  }),
+  gender: z.enum(['masculine', 'feminine'], { message: 'Selecione um gênero' }),
+  objective: z.enum(['lose_weight', 'maintain_weight', 'gain_weight'], {
+    message: 'Selecione um objetivo'
+  })
 })
 
 type DietPlanRequestFormData = z.infer<typeof dietPlanRequest>
@@ -37,8 +52,8 @@ export function DietForm() {
         }
       },
       {
-        onSuccess: (fullResponse) => {
-          console.log('Plano completo:', fullResponse)
+        onSuccess: () => {
+          console.log('Plano gerado com sucesso!')
         },
         onError: (error) => {
           console.error('Erro:', error)
@@ -48,17 +63,12 @@ export function DietForm() {
     )
   }
 
-  const { register, handleSubmit } = useForm<DietPlanRequestFormData>({
-    resolver: zodResolver(dietPlanRequest),
-    defaultValues: {
-      name: '',
-      age: undefined,
-      height: undefined,
-      weight: undefined,
-      activityLevel: 'sedentary',
-      gender: 'masculine',
-      objective: 'maintain_weight'
-    }
+  const {
+    register,
+    handleSubmit,
+    formState: { errors }
+  } = useForm<DietPlanRequestFormData>({
+    resolver: zodResolver(dietPlanRequest)
   })
 
   return (
@@ -85,18 +95,23 @@ export function DietForm() {
                 Personalize seu plano alimentar para alcançar seus objetivos de forma saudável.
               </p>
 
-              <div className="mb-6 grid grid-cols-2 gap-3 sm:grid-cols-4 sm:gap-4">
+              <div className="mb-6 grid grid-cols-2 gap-3 sm:grid-cols-5 sm:gap-4">
                 <div className="col-span-2">
                   <label htmlFor="name" className="mb-2 block text-sm text-white">
-                    Nome Completo
+                    Nome
                   </label>
                   <input
                     {...register('name')}
                     type="text"
                     id="name"
                     placeholder="Seu Nome"
-                    className="w-full rounded bg-neutral-700 px-3 py-3 text-sm text-white outline-none focus:ring-2 focus:ring-amber-300 sm:px-4"
+                    className={`w-full rounded bg-neutral-700 px-3 py-3 text-sm text-white outline-none focus:ring-2 sm:px-4 ${
+                      errors.name ? 'ring-2 ring-red-500' : 'focus:ring-amber-300'
+                    }`}
                   />
+                  {errors.name && (
+                    <p className="mt-1 text-red-500 text-xs">{errors.name.message}</p>
+                  )}
                 </div>
                 <div className="col-span-1">
                   <label htmlFor="age" className="mb-2 block text-sm text-white">
@@ -107,8 +122,11 @@ export function DietForm() {
                     type="number"
                     id="age"
                     placeholder="00"
-                    className="w-full rounded bg-neutral-700 px-3 py-3 text-sm text-white outline-none focus:ring-2 focus:ring-amber-300 sm:px-4"
+                    className={`w-full rounded bg-neutral-700 px-3 py-3 text-sm text-white outline-none focus:ring-2 sm:px-4 ${
+                      errors.age ? 'ring-2 ring-red-500' : 'focus:ring-amber-300'
+                    }`}
                   />
+                  {errors.age && <p className="mt-1 text-red-500 text-xs">{errors.age.message}</p>}
                 </div>
                 <div className="col-span-1">
                   <label htmlFor="weight" className="mb-2 block text-sm text-white">
@@ -119,8 +137,13 @@ export function DietForm() {
                     type="number"
                     id="weight"
                     placeholder="00"
-                    className="w-full rounded bg-neutral-700 px-3 py-3 text-sm text-white outline-none focus:ring-2 focus:ring-amber-300 sm:px-4"
+                    className={`w-full rounded bg-neutral-700 px-3 py-3 text-sm text-white outline-none focus:ring-2 sm:px-4 ${
+                      errors.weight ? 'ring-2 ring-red-500' : 'focus:ring-amber-300'
+                    }`}
                   />
+                  {errors.weight && (
+                    <p className="mt-1 text-red-500 text-xs">{errors.weight.message}</p>
+                  )}
                 </div>
                 <div className="col-span-2 sm:col-span-1">
                   <label htmlFor="height" className="mb-2 block text-sm text-white">
@@ -131,8 +154,13 @@ export function DietForm() {
                     type="number"
                     id="height"
                     placeholder="000"
-                    className="w-full rounded bg-neutral-700 px-3 py-3 text-sm text-white outline-none focus:ring-2 focus:ring-amber-300 sm:px-4"
+                    className={`w-full rounded bg-neutral-700 px-3 py-3 text-sm text-white outline-none focus:ring-2 sm:px-4 ${
+                      errors.height ? 'ring-2 ring-red-500' : 'focus:ring-amber-300'
+                    }`}
                   />
+                  {errors.height && (
+                    <p className="mt-1 text-red-500 text-xs">{errors.height.message}</p>
+                  )}
                 </div>
               </div>
 
@@ -163,6 +191,9 @@ export function DietForm() {
                       </div>
                     </label>
                   </div>
+                  {errors.gender && (
+                    <p className="mt-2 text-red-500 text-xs">{errors.gender.message}</p>
+                  )}
                 </fieldset>
               </div>
 
@@ -218,6 +249,9 @@ export function DietForm() {
                       </div>
                     </label>
                   </div>
+                  {errors.objective && (
+                    <p className="mt-2 text-red-500 text-xs">{errors.objective.message}</p>
+                  )}
                 </fieldset>
               </div>
 
@@ -269,6 +303,9 @@ export function DietForm() {
                       </div>
                     </label>
                   </div>
+                  {errors.activityLevel && (
+                    <p className="mt-2 text-red-500 text-xs">{errors.activityLevel.message}</p>
+                  )}
                 </fieldset>
               </div>
 
@@ -342,7 +379,11 @@ export function DietForm() {
                 type="button"
                 className="mt-6 flex w-full items-center justify-center gap-2 rounded-lg bg-neutral-700 py-3 font-bold text-sm text-white transition-colors hover:bg-neutral-600 sm:py-4 sm:text-base"
               >
-                {isPending ? <LoaderCircle className="h-5 w-5 animate-spin" /> : '← Criar Novo Plano'}
+                {isPending ? (
+                  <LoaderCircle className="h-5 w-5 animate-spin" />
+                ) : (
+                  '← Criar Novo Plano'
+                )}
               </button>
             </div>
           )}
