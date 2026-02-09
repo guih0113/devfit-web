@@ -2,9 +2,9 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { Activity, LoaderCircle, Target, TrendingDown, TrendingUp } from 'lucide-react'
 import { useState } from 'react'
 import { useForm } from 'react-hook-form'
-import ReactMarkdown from 'react-markdown'
 import { Link } from 'react-router'
 import z from 'zod'
+import { FormResponse } from '../components/form-response'
 import { useCreateDietPlan } from '../http/use-create-diet-plan'
 
 const dietPlanRequest = z.object({
@@ -331,51 +331,11 @@ export function DietForm() {
               </h1>
 
               <div className="prose prose-invert prose-amber max-w-none">
-                <ReactMarkdown
-                  components={{
-                    h1: ({ node, ...props }) => (
-                      <h1 className="mt-6 mb-4 font-bold text-2xl text-amber-300" {...props} />
-                    ),
-                    h2: ({ node, ...props }) => (
-                      <h2 className="mt-5 mb-3 font-bold text-amber-300 text-xl" {...props} />
-                    ),
-                    h3: ({ node, ...props }) => (
-                      <h3 className="mt-4 mb-2 font-bold text-lg text-white" {...props} />
-                    ),
-                    p: ({ node, ...props }) => (
-                      <p className="mb-4 text-neutral-300 leading-relaxed" {...props} />
-                    ),
-                    ul: ({ node, ...props }) => (
-                      <ul
-                        className="mb-4 list-inside list-disc space-y-2 text-neutral-300"
-                        {...props}
-                      />
-                    ),
-                    ol: ({ node, ...props }) => (
-                      <ol
-                        className="mb-4 list-inside list-decimal space-y-2 text-neutral-300"
-                        {...props}
-                      />
-                    ),
-                    li: ({ node, ...props }) => <li className="text-neutral-300" {...props} />,
-                    strong: ({ node, ...props }) => (
-                      <strong className="font-bold text-amber-300" {...props} />
-                    ),
-                    em: ({ node, ...props }) => <em className="text-amber-200 italic" {...props} />,
-                    code: ({ node, ...props }) => (
-                      <code
-                        className="rounded bg-neutral-700 px-2 py-1 text-amber-300 text-sm"
-                        {...props}
-                      />
-                    )
-                  }}
-                >
-                  {markdownContent}
-                </ReactMarkdown>
+                <FormResponse content={markdownContent} />
               </div>
 
-              <button
-                onClick={() => setShowForm(true)}
+              <Link
+                to='/'
                 type="button"
                 className="mt-6 flex w-full items-center justify-center gap-2 rounded-lg bg-neutral-700 py-3 font-bold text-sm text-white transition-colors hover:bg-neutral-600 sm:py-4 sm:text-base"
               >
@@ -384,7 +344,7 @@ export function DietForm() {
                 ) : (
                   '← Criar Novo Plano'
                 )}
-              </button>
+              </Link>
             </div>
           )}
         </div>
