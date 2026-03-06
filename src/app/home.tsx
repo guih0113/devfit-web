@@ -1,5 +1,5 @@
-import foodImage from '../assets/food.png'
-import gymImage from '../assets/gym.png'
+import foodImage from '../assets/food.webp'
+import gymImage from '../assets/gym.webp'
 import { Card } from '../components/card'
 
 export function Home() {
